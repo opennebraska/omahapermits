@@ -41,6 +41,8 @@ sub fetch_owner {
 
 __END__
 Example DOM snippet we're trying to grab:
+From https://www.omahapermits.com/permitinfo/Cap/CapDetail.aspx?Module=Enforcement&TabName=Enforcement&capID1=18CAP&capID2=00000&capID3=003ME
+
 <h1>
   <span id="ctl00_PlaceHolderMain_PermitDetailList1_per_permitdetail_label_owner636873222828512865">Owner:</span>
 </h1>
