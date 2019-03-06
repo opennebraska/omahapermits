@@ -24,9 +24,12 @@ while (<$in>) {
   print ".";
   my @owner = fetch_owner($url);
   if (@owner == 3) {
+    # We found 3 lines of "Owner" so leave [9] "OWNER_NAME2" blank:
     $line[8] = shift @owner;  # OWNER_NAME
     splice @line, 10, 2, @owner;
   } else {
+    # We (probably) found 4 lines of "Owner" so push it all onto the CSV:
+    # See Issue #1
     splice @line, 8, 4, @owner;
   }
   $csv->say($out, [ @line ]);
