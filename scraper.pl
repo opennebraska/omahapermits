@@ -2,26 +2,34 @@
 
 use 5.22.0;
 use WWW::Mechanize::Query;
+use Text::CSV_XS;
 use Carp qw(longmess);
 use FileHandle;
 STDOUT->autoflush();
 
 my $mech = WWW::Mechanize::Query->new(onerror => sub { print longmess @_ });
-open my $out, ">", "out.csv";
+my $csv = Text::CSV_XS->new ({ binary => 1, auto_diag => 1 });
+open my $out, ">:encoding(utf8)", "out.csv";
 $out->autoflush();
 open my $in, "<", "in.csv";
 my $header = <$in>;   # Don't parse header
-print $out $header;
+$header =~ s/[\r\n]+//g;
+$csv->say($out, [ split /,/, $header ]);
 while (<$in>) {
-  my @line = split /,/;
+  s/[\r\n]+//g;
+  my @line = split /,/, $_, -1;
+  # Limit to a couple problem cases reported in Issue #1
+  # next unless ($line[0] =~ /(CASE-17-00845|CASE-16-01401|CASE-17-00146)/);
   my $url = $line[7];
   print ".";
   my @owner = fetch_owner($url);
-  $line[8]  = $owner[0];  # OWNER_NAME
-  $line[10] = $owner[1];  # ADDRESS
-  $line[11] = $owner[2];  # OWNER_CITY-ST-ZIP
-  print $out join ",", @line;
-  print $out "\n";
+  if (@owner == 3) {
+    $line[8] = shift @owner;  # OWNER_NAME
+    splice @line, 10, 2, @owner;
+  } else {
+    splice @line, 8, 4, @owner;
+  }
+  $csv->say($out, [ @line ]);
 }
 
 say "Exiting";
